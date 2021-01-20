@@ -13,7 +13,6 @@
     "@quasar/extras": "^1.0.0",
     "axios": "^0.18.1",
     "core-js": "^3.6.5",
-    "electron-aspect-ratio-browser-window": "^1.0.2",
     "nedb-promises": "^4.1.1",
     "quasar": "^1.0.0"
   },
@@ -22,7 +21,7 @@
     "@quasar/quasar-app-extension-qmediaplayer": "^1.1.4",
     "babel-eslint": "^10.0.1",
     "devtron": "^1.4.0",
-    "electron": "^9.0.0",
+    "electron": "^11.2.0",
     "electron-debug": "^3.0.1",
     "electron-devtools-installer": "^3.0.0",
     "eslint": "^6.8.0",

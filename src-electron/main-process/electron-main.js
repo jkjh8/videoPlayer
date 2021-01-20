@@ -1,5 +1,4 @@
 import { app, BrowserWindow, nativeTheme, Menu, ipcMain, dialog, globalShortcut } from 'electron'
-const AspectRatioBrowserWindow = require('electron-aspect-ratio-browser-window')
 import fs from 'fs'
 import path from 'path'
 
@@ -23,17 +22,19 @@ let playlistWindow
 
 //Main window
 function createWindow () {
-  mainWindow = new AspectRatioBrowserWindow({
-    width: 1600,
-    height: 900,
+  mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
     fullscreenWindowTitle: true,
     webPreferences: {
       nodeIntegration: process.env.QUASAR_NODE_INTEGRATION,
-      nodeIntegrationInWorker: process.env.QUASAR_NODE_INTEGRATION
+      nodeIntegrationInWorker: process.env.QUASAR_NODE_INTEGRATION,
+      enableRemoteModule: true,
       // webSecurity: false
     }
   })
   mainWindow.loadURL(process.env.APP_URL)
+  mainWindow.setAspectRatio(16/9)
   mainWindow.on('closed', () => {
     app.quit()
   })
@@ -45,11 +46,12 @@ function createWindow () {
 function createPlaylistWindow () {
   playlistWindow = new BrowserWindow({
     width: 800,
-    height: 1000,
+    height: 400,
     useContentSize: true,
     webPreferences: {
       nodeIntegration: process.env.QUASAR_NODE_INTEGRATION,
-      nodeIntegrationInWorker: process.env.QUASAR_NODE_INTEGRATION
+      nodeIntegrationInWorker: process.env.QUASAR_NODE_INTEGRATION,
+      enableRemoteModule: true
       // webSecurity: false
     }
   })

@@ -56,6 +56,7 @@ export default {
       this.video.sources = [{ src: URL.createObjectURL(file), type: 'video/mp4' }]
     },
     onEnded () {
+      this.video.sources = []
       console.log('end')
     },
     errorEvent (e) {

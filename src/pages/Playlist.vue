@@ -20,7 +20,18 @@
 
       <template v-slot:body-cell-index="props">
         <q-td :props="props">
-          <div>{{ props.row.index + 1 }}</div>
+          <div class="col-idx q-pa-none q-ma-none">{{ props.row.index + 1 }}</div>
+        </q-td>
+      </template>
+
+      <template v-slot:body-cell-path="props">
+        <q-td :props="props">
+          <div class="custom-td">
+            <q-tooltip>
+              {{ props.row.path }}
+            </q-tooltip>
+            {{ props.row.path }}
+          </div>
         </q-td>
       </template>
 
@@ -113,3 +124,15 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.col-idx {
+  max-width: 10px;
+}
+.custom-td {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
