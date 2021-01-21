@@ -16,7 +16,7 @@ exports.createPlayerOptionWindow = () => {
     })
     playerOptionWindow.loadURL(process.env.APP_URL+'/#/playoption')
     playerOptionWindow.on('closed', () => { playerOptionWindow = null })
-    playerOptionWindow.removeMenu()
+    // playerOptionWindow.removeMenu()
   } else {
     playerOptionWindow.setVisibleOnAllWorkspaces(true)
     playerOptionWindow.show()

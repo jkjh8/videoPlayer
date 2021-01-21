@@ -6,13 +6,19 @@
         <q-card-section class="row items-center no-wrap">
           <div>
             <div
-              v-if="currentMediaInfo && currentMediaInfo.Title"
+              v-if="currentFile && currentFile.media.track[0].Title"
               class="text-weight-bold"
             >
-              {{ currentMediaInfo.Title }}
+              {{ currentFile.media.track[0].Title }}
+            </div>
+            <div
+              v-else-if="currentFile && currentFile.path"
+              class="text-weight-bold"
+            >
+              {{ currentFile.path.name }}
             </div>
             <div v-else class="text-weight-bold">
-              {{ currentFile }}
+              None
             </div>
             <div
               v-if="currentMediaInfo && currentMediaInfo.Director"
@@ -24,7 +30,7 @@
 
           <q-space />
 
-          <q-btn flat round icon="play_arrow" />
+          <q-btn flat round icon="play_arrow" @click="play" />
           <q-btn flat round icon="pause" />
           <q-btn flat round icon="close" v-close-popup />
         </q-card-section>
@@ -39,18 +45,20 @@ export default {
   name: 'PlayControl',
   data () {
     return {
-      currentMediaInfo: null,
-      currentFile: {
-        name: 'None'
-      }
+      currentFile: null
     }
   },
   mounted () {
-    ipcRenderer.on('info', (event, mediainfo) => {
-      console.log(mediainfo)
-      // this.currentMediaInfo = mediainfo
-      // this.currentFile = filePath
+    ipcRenderer.on('info', (event, file) => {
+      this.currentFile = file
     })
+    ipcRenderer.send('info')
+  },
+  methods: {
+    play () {
+      ipcRenderer.send('control', 'play')
+      console.log(this.currentFile)
+    }
   }
 }
 </script>

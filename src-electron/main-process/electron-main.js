@@ -21,7 +21,8 @@ if (process.env.PROD) {
 let mainWindow
 // let audioDevices
 let playlistWindow
-let playOptions
+let playOptionWindow
+let currentFile = null
 
 //Main window
 function createWindow () {
@@ -85,7 +86,7 @@ const menu = Menu.buildFromTemplate([
         label: 'Play Options',
         accelerator: 'CommandOrControl+D',
         click () {
-          createPlayerOptionWindow()
+          playOptionWindow = createPlayerOptionWindow()
         }
       },
       { type: 'separator' },
@@ -95,7 +96,6 @@ const menu = Menu.buildFromTemplate([
         accelerator: 'CommandOrControl+L',
         click () {
           playlistWindow = createPlaylistWindow()
-          console.log(playlistWindow)
         }
       }
     ]
@@ -126,6 +126,9 @@ ipcMain.on('play', async (event, idx) => {
 
 ipcMain.on('end', (event, msg) => {
   console.log('end', msg)
+})
+ipcMain.on('info', (event) => {
+  event.returnValue = currentFile
 })
 
 
@@ -159,17 +162,14 @@ function open () {
 }
 
 function sendFile (file, play = false) {
-  mainWindow.webContents.send('info', '111')
-  console.log('send')
+  getMediaInfo(file)
   mainWindow.webContents.send('file', file, play)
 }
 
-function getMediaInfo(file) {
-  // const currentMediainfo = await mediainfo(file)
-  // const filePath = path.parse(file)
-  // console.log(currentMediainfo.media.track[0])
-  console.log('send')
-  mainWindow.webContents.send('info', '111')
+async function getMediaInfo(file) {
+  currentFile = await mediainfo(file)
+  currentFile.path = await path.parse(file)
+  playOptionWindow.webContents.send('info', currentFile)
 }
 
 //fullscreen function

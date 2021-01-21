@@ -1,14 +1,12 @@
 <template>
   <div>
-    <PlayControl></PlayControl>
+    <player-control></player-control>
   </div>
 </template>
 
 <script>
 import PlayControl from '../components/PlayControl'
 export default {
-  components: {
-    PlayControl
-  }
+  components: { 'player-control': PlayControl }
 }
 </script>
