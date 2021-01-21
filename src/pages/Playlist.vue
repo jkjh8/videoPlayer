@@ -18,15 +18,45 @@
         </div>
       </template>
 
+      <template v-slot:header-cell-index="props">
+        <q-th :props="props" class="col-idx">
+          {{ props.col.label }}
+        </q-th>
+      </template>
+
+      <template v-slot:header-cell-path="props">
+        <q-th :props="props" class="col-path">
+          {{ props.col.label }}
+        </q-th>
+      </template>
+
+      <template v-slot:header-cell-size="props">
+        <q-th :props="props" class="col-etc">
+          {{ props.col.label }}
+        </q-th>
+      </template>
+
+      <template v-slot:header-cell-type="props">
+        <q-th :props="props" class="col-etc">
+          {{ props.col.label }}
+        </q-th>
+      </template>
+
       <template v-slot:body-cell-index="props">
-        <q-td :props="props">
-          <div class="col-idx q-pa-none q-ma-none">{{ props.row.index + 1 }}</div>
+        <q-td :props="props" class="col-idx q-pa-none q-ma-none">
+          <div>{{ props.row.index + 1 }}</div>
+        </q-td>
+      </template>
+
+      <template v-slot:body-cell-name="props">
+        <q-td :props="props" class="col-name">
+          <div>{{ props.row.name }}</div>
         </q-td>
       </template>
 
       <template v-slot:body-cell-path="props">
         <q-td :props="props">
-          <div class="custom-td">
+          <div class="col-path">
             <q-tooltip>
               {{ props.row.path }}
             </q-tooltip>
@@ -101,8 +131,7 @@ export default {
       return format.humanStorageSize(size)
     },
     play (id) {
-      const idx = this.playlist[id].index
-      ipcRenderer.send('play', idx)
+      ipcRenderer.send('play', id)
     },
     fileIdx () {
       this.playlist.forEach((file, idx) => {
@@ -127,10 +156,17 @@ export default {
 
 <style scoped>
 .col-idx {
-  max-width: 10px;
+  width: 15px;
 }
-.custom-td {
+.col-etc {
+  width: 30px;
+}
+.col-name {
   max-width: 200px;
+  white-space: normal;
+}
+.col-path {
+  width: 200px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

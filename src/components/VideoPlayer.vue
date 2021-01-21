@@ -4,7 +4,7 @@
       <q-media-player
         type="video"
         ref="mediaplayer"
-        background-color="black"
+        background-color="grey-10"
         :autoplay="autoplay"
         :show-big-play-button="false"
         :sources="sources"
@@ -30,11 +30,7 @@ const mainWindow = require('electron').remote.getCurrentWindow()
 export default {
   data () {
     return {
-      sources: [
-        {
-          src: 'http://localhost:8082/test?file=C:\\Users\\jkjh8\\Videos\\1.mp4'
-        }
-      ],
+      sources: [],
       deviceInfo: [],
       autoplay: false
     }
@@ -45,7 +41,7 @@ export default {
       // const file = await new File([data], filePath.base)
       console.log(file)
       // this.sources = [{ src: URL.createObjectURL(file), type: file.type }]
-      this.sources = [{ src: `http://localhost:8082/test?file=${file}` }]
+      this.sources = [{ src: `http://localhost:8082/stream?file=${encodeURIComponent(file)}` }]
       this.autoplay = autoplay
     })
     this.$refs.mediaplayer.setFullscreen()
@@ -53,14 +49,13 @@ export default {
   methods: {
     openFile (file) {
       console.log(file)
-      this.video.sources = [{ src: URL.createObjectURL(file), type: 'video/mp4' }]
+      this.video.sources = [{ src: URL.createObjectURL(encodeURIComponent(file)), type: 'video/mp4' }]
     },
     onEnded () {
-      this.video.sources = []
-      console.log('end')
+      ipcRenderer.send('end', 'end')
     },
     errorEvent (e) {
-      console.log(e)
+      console.log('error', e)
     },
     showControl () {
       if (mainWindow.isFullScreen()) {

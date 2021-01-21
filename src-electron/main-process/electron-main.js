@@ -2,8 +2,10 @@ import { app, BrowserWindow, nativeTheme, Menu, ipcMain, dialog, globalShortcut 
 import fs from 'fs'
 import path from 'path'
 
-require('./webApi')
-
+const { createPlaylistWindow } = require('./Windows/playlistWindow')
+const { createPlayerOptionWindow } = require('./Windows/playerOptionWindow')
+const mediainfo = require('node-mediainfo')
+const apiServer = require('./webApi')
 const Datastore = require('nedb-promises')
 
 try {
@@ -19,6 +21,7 @@ if (process.env.PROD) {
 let mainWindow
 // let audioDevices
 let playlistWindow
+let playOptions
 
 //Main window
 function createWindow () {
@@ -42,23 +45,6 @@ function createWindow () {
   mainWindow.setAspectRatio(16/9)
 }
 
-//playlist window
-function createPlaylistWindow () {
-  playlistWindow = new BrowserWindow({
-    width: 800,
-    height: 400,
-    useContentSize: true,
-    webPreferences: {
-      nodeIntegration: process.env.QUASAR_NODE_INTEGRATION,
-      nodeIntegrationInWorker: process.env.QUASAR_NODE_INTEGRATION,
-      enableRemoteModule: true
-      // webSecurity: false
-    }
-  })
-  playlistWindow.loadURL(process.env.APP_URL+'/#/playlist')
-  playlistWindow.on('closed', () => { playlistWindow = null })
-  playlistWindow.removeMenu()
-}
 
 app.on('ready', createWindow)
 
@@ -79,52 +65,39 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   if (mainWindow === null) {
-    createWindow()
+    mainWindow = createWindow()
   }
 })
-
-//open file function
-function open () {
-  const file = dialog.showOpenDialogSync({
-    filters: [
-      { name: 'Audio & Video', extensions: ['mp4', 'mov', 'avi', 'webm', 'mp3', 'wav', 'ogg'] },
-      { name: 'Videos', extensions: ['mp4', 'mov', 'avi', 'webm'] },
-      { name: 'Audios', extensions: ['mp3', 'wav', 'ogg'] },
-      { name: 'All Files', extensions: ['*'] }
-    ],
-    properties: ['openFile']
-  })
-  console.log(file)
-  if (file && file.length > 0) {
-    sendFile(file[0])
-  }
-}
-
-function sendFile (file, play = false) {
-  mainWindow.webContents.send('file', file, play)
-}
-
-//fullscreen function
-function fullscreen () {
-  const isFullScreen = mainWindow.isFullScreen()
-    mainWindow.setFullScreen(!isFullScreen)
-    mainWindow.setMenuBarVisibility(isFullScreen)
-}
 
 const menu = Menu.buildFromTemplate([
   {
     label: 'File',
     submenu: [
-      { label: 'Open', accelerator: 'ctrl+o', click () { open() } },
-      { label: 'Develop', accelerator: 'ctrl+d', click () { mainWindow.webContents.toggleDevTools() } },
+      { label: 'Open', accelerator: 'CommandOrControl+O', click () { open() } },
+      { label: 'Develop', accelerator: 'CommandOrControl+I', click () { mainWindow.webContents.toggleDevTools() } },
       { label: 'Exit', accelerator: 'ctrl+F4', click () { app.quit() } }
     ]
   },
   {
     label: 'Player',
     submenu: [
-      { label: 'Full Screen', accelerator: 'f11', click () { fullscreen() } },
-      { label: 'Playlist', accelerator: 'ctrl+l', click () { createPlaylistWindow() } }
+      {
+        label: 'Play Options',
+        accelerator: 'CommandOrControl+D',
+        click () {
+          createPlayerOptionWindow()
+        }
+      },
+      { type: 'separator' },
+      { label: 'Full Screen', accelerator: 'F11', click () { fullscreen() } },
+      { 
+        label: 'Playlist',
+        accelerator: 'CommandOrControl+L',
+        click () {
+          playlistWindow = createPlaylistWindow()
+          console.log(playlistWindow)
+        }
+      }
     ]
   }
 ])
@@ -132,9 +105,8 @@ const menu = Menu.buildFromTemplate([
 Menu.setApplicationMenu(menu)
 
 //db
-
-
-const dbPath = `${process.cwd()}/playlist.db`
+const dbPath = `${app.getPath('userData')}/.db/playlist.db`
+console.log(dbPath)
 const db = Datastore.create({
   filename: dbPath,
   timestampData: true,
@@ -145,11 +117,16 @@ global.db = db
 //data Communication
 ipcMain.on('play', async (event, idx) => {
   const file = await db.find({ index: idx })
-  console.log(file)
-  sendFile(file[0].path, true)
+  if (fs.existsSync(file[0].path)) {
+    sendFile(file[0].path, true)
+  } else {
+    mainWindow.webContents.send('error', '파일이 존재 하지 않습니다.')
+  }
 })
 
-
+ipcMain.on('end', (event, msg) => {
+  console.log('end', msg)
+})
 
 
 // ipcMain.on('audioDevices', (event, devices) => {
@@ -163,3 +140,45 @@ ipcMain.on('play', async (event, idx) => {
 //   const logoFile = fs.readFileSync('C:/Users/jkjh8/OneDrive/Desktop/dev/playerElectron/src-electron/main-process/img/logo.png')
 //   e.reply('reqLogo', logoFile)
 // })
+//open file function
+
+function open () {
+  const file = dialog.showOpenDialogSync({
+    filters: [
+      { name: 'Audio & Video', extensions: ['mp4', "mkv", 'mov', 'avi', 'webm', 'mp3', 'wav', 'ogg'] },
+      { name: 'Videos', extensions: ['mp4', 'mov', 'avi', 'webm'] },
+      { name: 'Audios', extensions: ['mp3', 'wav', 'ogg'] },
+      { name: 'All Files', extensions: ['*'] }
+    ],
+    properties: ['openFile']
+  })
+  console.log(file)
+  if (file && file.length > 0) {
+    sendFile(file[0])
+  }
+}
+
+function sendFile (file, play = false) {
+  mainWindow.webContents.send('info', '111')
+  console.log('send')
+  mainWindow.webContents.send('file', file, play)
+}
+
+function getMediaInfo(file) {
+  // const currentMediainfo = await mediainfo(file)
+  // const filePath = path.parse(file)
+  // console.log(currentMediainfo.media.track[0])
+  console.log('send')
+  mainWindow.webContents.send('info', '111')
+}
+
+//fullscreen function
+function fullscreen () {
+  const isFullScreen = mainWindow.isFullScreen()
+    mainWindow.setFullScreen(!isFullScreen)
+    mainWindow.setMenuBarVisibility(isFullScreen)
+}
+
+
+//api server start
+apiServer.listen(8082)
